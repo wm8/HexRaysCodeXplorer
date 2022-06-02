@@ -382,7 +382,36 @@ void find_vtables()
 //---------------------------------------------------------------------------
 
 bool b_scaned = false;
+//GUSOV
+void my_search_for_objects(qvector<qstring>& result)
+{
+	if (!b_scaned) {
+		logmsg(DEBUG, "search_objects()");
 
+		// free previously found objects
+		free_vtable_lists();
+
+		// first search vtables using rtti information
+		find_vtables_rtti();
+
+		// find all the other vtables
+		find_vtables();
+
+		b_scaned = true;
+		for (auto& vftable_info_t : vtbl_t_list)
+		{
+			qstring vtbl_info_str;
+			vtbl_info_str.cat_sprnt(" 0x%x - 0x%x:  %s  methods count: %d", vftable_info_t.ea_begin, vftable_info_t.ea_end, vftable_info_t.vtbl_name.c_str(), vftable_info_t.methods);
+			result.push_back(vtbl_info_str);
+		}
+		for (auto& vftable_info_t : vtbl_list)
+		{
+			result.push_back(vftable_info_t);
+		}
+	
+	}
+
+}
 void search_objects(const bool b_force)
 {
 	if (!b_scaned || b_force) {

@@ -58,10 +58,26 @@ bool idaapi show_string_in_custom_view(void *ud, const qstring& title, const qst
 
 	return false;
 }
-
+void my_split(const qstring& options, const char splitter, qvector<qstring>& result)
+{
+	if (options.length() < 1)
+		return;
+	bool inside = false;
+	size_t start_pos = 0;
+	for (int i = 1; i != options.length(); i++)
+	{
+		if (options[i] == splitter && !inside && i != start_pos)
+		{
+			result.push_back(options.substr(start_pos, i-start_pos));
+			start_pos = i + 1;
+		}
+		if (options[i] == '"')
+			inside = !inside;
+	}
+	result.push_back(options.substr(start_pos, options.length() - start_pos));
+}
 void split_qstring(const qstring &options, const qstring &splitter, qvector<qstring> &result) {
 	size_t start_pos = 0;
-
 	do {
 		size_t npos = options.find(splitter, start_pos);
 		if (npos != -1) {

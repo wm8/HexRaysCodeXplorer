@@ -26,15 +26,15 @@ Global
 		{F7E6B557-41F3-444A-BCA4-3527547DD665}.Release x64|Win32.ActiveCfg = Release x64|x64
 		{F7E6B557-41F3-444A-BCA4-3527547DD665}.Release x64|x64.ActiveCfg = Release x64|x64
 		{F7E6B557-41F3-444A-BCA4-3527547DD665}.Release x64|x64.Build.0 = Release x64|x64
-		{F7E6B557-41F3-444A-BCA4-3527547DD665}.Release|Win32.ActiveCfg = Release|x64
-		{F7E6B557-41F3-444A-BCA4-3527547DD665}.Release|x64.ActiveCfg = Release|x64
-		{F7E6B557-41F3-444A-BCA4-3527547DD665}.Release|x64.Build.0 = Release|x64
+		{F7E6B557-41F3-444A-BCA4-3527547DD665}.Release|Win32.ActiveCfg = Release x32|x64
+		{F7E6B557-41F3-444A-BCA4-3527547DD665}.Release|x64.ActiveCfg = Release x32|x64
+		{F7E6B557-41F3-444A-BCA4-3527547DD665}.Release|x64.Build.0 = Release x32|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {8C949C23-C6D6-418A-9214-CD10668201BC}
 		VisualSVNWorkingCopyRoot = .
+		SolutionGuid = {8C949C23-C6D6-418A-9214-CD10668201BC}
 	EndGlobalSection
 EndGlobal

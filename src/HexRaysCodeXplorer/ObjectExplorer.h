@@ -56,7 +56,7 @@ extern qvector <qstring> vtbl_list;
 
 inline BOOL is_valid_name(LPCSTR name){ return(*((PDWORD) name) == 0x375F3F3F /*"??_7"*/); }
 //void parse_vft_members(LPCTSTR name, ea_t ea_start, ea_t ea_end);
-
+void my_search_for_objects(qvector<qstring>& result);
 void search_objects(bool b_force = true);
 
 

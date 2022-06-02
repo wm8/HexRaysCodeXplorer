@@ -137,7 +137,7 @@ int SHA1Reset(SHA1Context *);
 int SHA1Input(SHA1Context *, const uint8_t *, unsigned int);
 int SHA1Result(SHA1Context *, uint8_t Message_Digest[SHA1HashSize]);
 void SHA1MessageDigestToString(uint8_t Message_Digest[SHA1HashSize], char outbuffer[SHA1HashSize * 2]);
-
+void my_split(const qstring& options, const char splitter, qvector<qstring>& result);
 void split_qstring(const qstring &options, const qstring &splitter, qvector<qstring> &result);
 
 void idaapi setUnknown(ea_t ea, asize_t size);

@@ -40,6 +40,7 @@ along with this program.  If not, see
 #include "reconstructed_place_t.h"
 #include <functional>
 #include <utility>
+#include <iostream>
 
 extern plugin_t PLUGIN;
 
@@ -633,14 +634,17 @@ static ssize_t idaapi callback(void* ud, const hexrays_event_t event, va_list va
 	
 	return 0;
 }
-
-void parse_plugin_options(qstring &options, bool &dump_types, bool &dump_ctrees, qstring &crypto_prefix) {
+//GUSOV
+void parse_plugin_options(qstring &options, bool &dump_types, bool &dump_ctrees, bool &dump_vtbl, qstring &crypto_prefix, qstring& path_to_file) {
 	qvector<qstring> params;
-	const qstring splitter = ":";
-	split_qstring(options, splitter, params);
 
+	msg("[Options]: %s\n", options.c_str());
+	//my_split(options, ':', params);
+	qstring splitter = ":";
+	split_qstring(options, splitter, params);
 	dump_types = false;
 	dump_ctrees = false;
+	dump_vtbl = false;
 	crypto_prefix = "";
 
 	for (const auto& param : params) {
@@ -650,13 +654,18 @@ void parse_plugin_options(qstring &options, bool &dump_types, bool &dump_ctrees,
 		else if (param == "dump_ctrees") {
 			dump_ctrees = true;
 		}
-		else if (param.length() > k_crypto_prefix_param.length() && param.find(k_crypto_prefix_param) == 0) {
+		else if (param == "dump_vbtl")
+			dump_vtbl = true;
+		else if (dump_vtbl)
+			path_to_file = param;
+		else
+	    if (param.length() > k_crypto_prefix_param.length() && param.find(k_crypto_prefix_param) == 0) {
 			crypto_prefix = param.substr(k_crypto_prefix_param.length());
 		}
 		else {
 			qstring message = "Invalid argument: ";
 			message += param + "\n";
-			logmsg(INFO, message.c_str());
+			logmsg(INFO, "%s\n", message.c_str());
 		}
 	}
 }
@@ -758,7 +767,7 @@ bool idaapi codexplorer_ctx_t::run(size_t arg)
     auto reconstruct_type_params = *reinterpret_cast<reconstruct_type_params_t *>(arg);
     return reconstruct_type(reconstruct_type_params);
 }
-
+//GUSOV
 //--------------------------------------------------------------------------
 // Initialize the plugin.
 plugmod_t *idaapi init(void)
@@ -774,11 +783,13 @@ plugmod_t *idaapi init(void)
 
 	auto dump_types = false;
 	auto dump_ctrees = false;
+	auto dump_vbtl = false;
 	qstring crypto_prefix;
+	qstring path_to_file;
 
-	qstring options = get_plugin_options(PLUGIN.wanted_name);
-	parse_plugin_options(options, dump_types, dump_ctrees, crypto_prefix);
-
+	qstring options = get_plugin_options("HexRaysCodeXplorer");
+	parse_plugin_options(options, dump_types, dump_ctrees, dump_vbtl,  crypto_prefix, path_to_file);
+	msg("[Hex-Rays] Parsing of options: dump_ctrees = %d, dump_vbtl = %d, dump_types = %d\n", dump_ctrees, dump_vbtl, dump_types);
 	auto config_read = read_config_file("codeexplorer.cfg", g_opts, _countof(g_opts), nullptr);
 
 	for (auto& k_action_desc : k_action_descs)
@@ -790,8 +801,8 @@ plugmod_t *idaapi init(void)
 	install_hexrays_callback(static_cast<hexrays_cb_t*>(callback), nullptr);
 	logmsg(INFO, "Hex-rays version %s has been detected\n", get_hexrays_version());
 	inited = true;
-
-	if (dump_ctrees || dump_types) {
+	
+	if (dump_ctrees || dump_types || dump_vbtl) {
 		auto_wait();
 
 		if (dump_types) {
@@ -802,7 +813,22 @@ plugmod_t *idaapi init(void)
 			if (file_id != -1)
 				qclose(file_id);
 		}
-
+		if (dump_vbtl)
+		{
+			msg("Dumping vtbl\n");
+			qvector<qstring> list;
+			my_search_for_objects(list);
+			auto file_id = qcreate(path_to_file.c_str(), 511);
+			qstring result;
+			for (auto& t : list)
+				result += t + "\n";
+			msg("File id: %d\n", file_id);
+			if (file_id != -1)
+			{
+				qwrite(file_id, result.c_str(), result.length());
+				qclose(file_id);
+			}
+		}
 		if (dump_ctrees) {
 			logmsg(DEBUG, "Dumping ctrees\n");
 			dump_funcs_ctree(nullptr, crypto_prefix);
@@ -839,6 +865,6 @@ plugin_t PLUGIN =
 	comment,					// long comment about the plugin
 								// it could appear in the status line or as a hint
 	"",							// multiline help about the plugin
-	"HexRaysCodeXplorer by @REhints", // the preferred short name of the plugin (PLUGIN.wanted_name)
+	"Xplorer", // the preferred short name of the plugin (PLUGIN.wanted_name)
 	""							// the preferred hotkey to run the plugin
 };
