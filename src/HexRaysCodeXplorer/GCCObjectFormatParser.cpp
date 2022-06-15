@@ -41,6 +41,7 @@
 #include "struct.hpp"
 #include "Debug.h"
 #include "ReconstructableType.h"
+#include "VirtualTables.h"
 #include <stack>
 
 #define vmi_class_type_info_name "_ZTVN10__cxxabiv121__vmi_class_type_infoE"
@@ -290,7 +291,11 @@ void GCCObjectFormatParser::clear_info()
 	assert(false); // reasonable question what to do with ReconstructableTypes.
 }
 
-void buildReconstructableTypesRecursive(GCCTypeInfo *type,  std::set <GCCTypeInfo *> &visitedTypes) {
+//void buildReconstructableTypesRecursive(GCCTypeInfo* type, std::set <GCCTypeInfo*>& visitedTypes) {
+//	std::set<ReconstructableTypeVtable*> virt_tables;
+//	buildReconstructableTypesRecursive(type, visitedTypes, virt_tables);
+//}
+void buildReconstructableTypesRecursive(GCCTypeInfo *type,  std::set <GCCTypeInfo *> &visitedTypes/*, std::set<ReconstructableTypeVtable*>& virt_tables*/) {
 	if (visitedTypes.count(type))
 		return;
 	// Handle parents first
@@ -330,6 +335,7 @@ void buildReconstructableTypesRecursive(GCCTypeInfo *type,  std::set <GCCTypeInf
 				vtblName = buffer;
 			}
 			ReconstructableType * reVtbl = ReconstructableTypeVtable::get_reconstructable_type_vtable(vtblName, vtblInfo->ea_start);
+			reVtbl->ea = vtblInfo->ea_start;
 			if (i != 0) {
 				ReconstructableType *parent;
 				if (g_ReconstractedTypes.count(type->parentsTypes[i]->info->typeName))
@@ -363,16 +369,18 @@ void buildReconstructableTypesRecursive(GCCTypeInfo *type,  std::set <GCCTypeInf
 			for (unsigned int j = 0; j < vtblInfo->vtables[i].methodsCount; ++j) {
 				ReconstructableMember *member = new ReconstructableMember();
 				member->offset = sizeof(uval_t)*j;
+
 				ea_t funcPtr = getEa(vtblInfo->vtables[i].ea + sizeof(uval_t)*j + sizeof(GCC_RTTI::__vtable_info));
+				
 				if (funcPtr == 0) {
 					member->name = "purecall";
 					member->name += std::to_string(j);
 				}
-					
 				else {
 					if (ph.id == PLFM_ARM)
 						funcPtr &= (ea_t)-2;
 					qstring method_name;
+					member->ea = funcPtr;
 					get_ea_name(&method_name, funcPtr);
 					if (method_name.find("sub_", 0) == 0 || method_name.length() == 0) {
 						// we can rename it.
@@ -410,6 +418,7 @@ void buildReconstructableTypesRecursive(GCCTypeInfo *type,  std::set <GCCTypeInf
 				reVtbl->AddDerivedMember(dmember);
 			}
 			reVtbl->SyncTypeInfo();
+			virt_tables.insert((ReconstructableTypeVtable*)reVtbl);
 			// we have vtable, we have it as structure, lets apply its name and type to IDB
 			if (i == 0) {
 				std::string idb_name = type->typeName + "::_vftable";
@@ -445,7 +454,7 @@ void fixupRecounstructableTypesId() {
 	}
 }
 
-static void buildReconstructableTypes() {
+static void buildReconstructableTypes(/*std::set<ReconstructableTypeVtable*>& virt_tables*/) {
 	std::set <GCCTypeInfo *> visitedTypes;
 	SyncTypeInfoMethod curMethod = syncTypeInfoMethod;
 	syncTypeInfoMethod = SyncTypeInfo_Names;

@@ -49,7 +49,7 @@ SRC=$(SRCDIR)CodeXplorer.cpp \
 
 OBJS=$(subst .cpp,.o,$(SRC))
 EXECUTABLE=HexRaysCodeXplorer
-INCLUDES=-I$(IDA_SDK)/include -I$(HEXRAYS_SDK)/include
+INCLUDES=-I$(IDA_SDK)/include -I$(HEXRAYS_SDK)/include -I$(NLOHMANN_JSON)/include
 
 # only used on command line anyway
 #DEFINE=__X64__ -D__LINUX__

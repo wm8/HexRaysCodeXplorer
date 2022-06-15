@@ -17,8 +17,10 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/../cmake)
 find_package(IdaSdk REQUIRED)
 
 set(HexRaysSdk_INCLUDE_DIRS ${HexRaysSdk_ROOT_DIR}/include)
+set(nlohmann_json_INCLUDE_DIRS ${NLOHMANN_JSON__ROOT_DIR}/include)
 
 include_directories(${HexRaysSdk_INCLUDE_DIRS})
+include_directories(${nlohmann_json_INCLUDE_DIRS})
 include_directories(${PROJECT_SOURCE_DIR})
 
 set(src

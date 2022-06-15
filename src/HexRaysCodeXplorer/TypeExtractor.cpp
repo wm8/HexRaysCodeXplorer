@@ -24,13 +24,10 @@
 */
 
 #include "Common.h"
-#include "TypeReconstructor.h"
 #include "TypeExtractor.h"
 #include "CtreeExtractor.h"
-
 #include "Debug.h"
 #include "Utility.h"
-
 #if defined (__LINUX__) || defined (__MAC__)
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
@@ -175,10 +172,10 @@ bool idaapi find_var(cfuncptr_t cfunc, const qstring& vtbl_name, qstring &var_na
 	obj_find.apply_to(&cfunc->body, NULL);
 
 	if (!obj_find.bFound) {
-		logmsg(DEBUG, "Failed to find variable...\n");
+		msg("Failed to find variable %s...\n", vtbl_name.c_str());
 		return false;
 	}
-
+	
 	var_name = obj_find.var_name;
 	reset_pointer_type(cfunc, var_name);
 	return true;
@@ -285,7 +282,7 @@ void idaapi dump_type_info(int file_id, const VTBL_info_t& vtbl_info, const qstr
 
 	get_struct_key(struc_type, vtbl_info, file_entry_key, filtered, vtbl_map);
 	get_hash_of_string(file_entry_key, key_hash);
-
+	msg("filtered: %d\n",  filtered);
 	if (filtered)
 		return;
 
@@ -305,6 +302,7 @@ void idaapi dump_type_info(int file_id, const VTBL_info_t& vtbl_info, const qstr
 		}
 		line.rtrim();
 		line += "\r\n";
+		msg("writing type\n");
 		qwrite(file_id, line.c_str(), line.length());
 	}
 }
@@ -330,14 +328,18 @@ bool idaapi check_subtype(VTBL_info_t vtbl_info, qstring subtype_name) {
 
 	return false;
 }
-
-bool idaapi extract_all_types(void *ud)
+bool idaapi extract_all_types(void* ud)
+{
+	qvector<vtable_struct*> tables;
+	return extract_all_types_my(ud, tables);
+}
+bool idaapi extract_all_types_my(void *ud, qvector<vtable_struct*>& tables)
 {
 	logmsg(DEBUG, "extract_types()\n");
-
+	msg("Extractint alll types\n");
 	// find vtables in the binary
-	search_objects(false);
-
+	search_objects(true);
+	
 	qvector <VTBL_info_t>::iterator vtbl_iter;
 
 	std::unordered_map<ea_t, VTBL_info_t> vtbl_map;
@@ -354,8 +356,14 @@ bool idaapi extract_all_types(void *ud)
 	int struct_no = 0;
 
 	for (vtbl_iter = vtbl_t_list.begin(); vtbl_iter != vtbl_t_list.end(); vtbl_iter++) {
+
 		qstring info_msg;
 		info_msg.cat_sprnt("Processing vtable %s\n", (*vtbl_iter).vtbl_name.c_str());
+		
+		vtable_struct* t = new vtable_struct();
+		t->addr = (*vtbl_iter).ea_begin;
+		t->name = (*vtbl_iter).vtbl_name;
+
 		logmsg(DEBUG, info_msg.c_str());
 
 		qstring type_name;
@@ -369,9 +377,10 @@ bool idaapi extract_all_types(void *ud)
 			qstring name;
 			if (get_func_name(&name, addr) <= 0)
 				continue;
-
+			
+			t->functions.push_back(new vfunc_struct(addr, name));
 			qstring info_msg1;
-			info_msg1.cat_sprnt("\t%s\n", name.c_str());
+			info_msg1.cat_sprnt("0x%x\t%s\n",addr,  name.c_str());
 			logmsg(DEBUG, info_msg1.c_str());
 
 			func_t *pfn = get_func(addr);
@@ -383,8 +392,8 @@ bool idaapi extract_all_types(void *ud)
 			if (cfunc != NULL) {
 				qstring var_name;
 				info_msg.clear();
-
 				if (find_var(cfunc, (*vtbl_iter).vtbl_name, var_name)) {
+
 					info_msg.cat_sprnt(" : %s\n", var_name.c_str());
 					logmsg(DEBUG, info_msg.c_str());
 
@@ -392,11 +401,11 @@ bool idaapi extract_all_types(void *ud)
 					sub_type_name.cat_sprnt("_%d", struct_subno);
 					struct_subno++;
 
-					if (reconstruct_type(cfunc, var_name, sub_type_name)) {
+					/*if (reconstruct_type(cfunc, var_name, sub_type_name)) {
 						if (check_subtype((*vtbl_iter), sub_type_name)) {
 							types_to_merge.push_back(sub_type_name);
 						}
-					}
+					}*/
 				}
 				else {
 					info_msg.cat_sprnt(" : none\n");
@@ -404,13 +413,13 @@ bool idaapi extract_all_types(void *ud)
 				}
 			}
 		}
-
+		tables.push_back(t);
 		struct_no++;
 
 		merge_types(types_to_merge, type_name);
 		dump_type_info(file_id, (*vtbl_iter), type_name, vtbl_map);
 	}
-
+	logmsg(DEBUG, "structs num: %d\n", struct_no);
 	qclose(file_id);
 	return true;
 }

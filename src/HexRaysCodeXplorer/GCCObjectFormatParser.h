@@ -29,7 +29,6 @@
 #include "IObjectFormatParser.h"
 #include "ObjectExplorer.h"
 
-
 namespace GCC_RTTI {
 #pragma pack(push, 1)
 

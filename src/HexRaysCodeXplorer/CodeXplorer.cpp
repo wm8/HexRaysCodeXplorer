@@ -22,7 +22,8 @@ along with this program.  If not, see
 
 ==============================================================================
 */
-
+#include "json_includer.h"
+#include "VirtualTables.h"
 #include "Common.h"
 #include "MicrocodeExtractor.h"
 #include "CtreeGraphBuilder.h"
@@ -31,7 +32,6 @@ along with this program.  If not, see
 #include "TypeExtractor.h"
 #include "CtreeExtractor.h"
 #include "Utility.h"
-
 #include "Debug.h"
 #include "IObjectFormatParser.h"
 #include "MSVCObjectFormatParser.h"
@@ -43,7 +43,6 @@ along with this program.  If not, see
 #include <iostream>
 
 extern plugin_t PLUGIN;
-
 reconstructed_place_t replace_template;
 int g_replace_id;
 
@@ -656,7 +655,7 @@ void parse_plugin_options(qstring &options, bool &dump_types, bool &dump_ctrees,
 		}
 		else if (param == "dump_vbtl")
 			dump_vtbl = true;
-		else if (dump_vtbl)
+		else if (dump_vtbl || dump_types)
 			path_to_file = param;
 		else
 	    if (param.length() > k_crypto_prefix_param.length() && param.find(k_crypto_prefix_param) == 0) {
@@ -768,6 +767,12 @@ bool idaapi codexplorer_ctx_t::run(size_t arg)
     return reconstruct_type(reconstruct_type_params);
 }
 //GUSOV
+qstring to_hex(ea_t t)
+{
+	qstring temp;
+	temp.cat_sprnt("%x", t);
+	return temp;
+}
 //--------------------------------------------------------------------------
 // Initialize the plugin.
 plugmod_t *idaapi init(void)
@@ -806,12 +811,52 @@ plugmod_t *idaapi init(void)
 		auto_wait();
 
 		if (dump_types) {
-			logmsg(DEBUG, "Dumping types\n");
-			extract_all_types(nullptr);
+			ParseVTBL();
+			//logmsg(DEBUG, "Dumping types\n");
+			//qvector<vtable_struct*> tables;
+			//extract_all_types_my(nullptr, tables);
+			//json annotation = json::array();
+			///*for (auto& vtable : tables)
+			//{
+			//	json vt;
+			//	vt["functionName"] = vtable->name;
+			//	vt["functionAddress"] = vtable->addr;
+			//	vt["functionAnnotationNodes"] = json::array();
+			//	
+			//	for (auto& vfunc : vtable->functions)
+			//	{
+			//		json vf;
+			//		vf["annotationType"] = 
+			//	}
+			//}*/
+			//for (auto& vtable : tables)
+			//{
+			//	json a_node;
+			//	a_node["annotationType"] = "VirualFunctionAnnotation";
+			//	msg("table: %s\n", vtable->name.c_str());
+			//	a_node["annotationData"]["table_name"] = vtable->name.c_str();
+			//	ea_t offset = 0;
+			//	for (auto& func : vtable->functions)
+			//	{
+			//		json f;
+			//		msg("\tfunc: %s, addr: 0x%x\n", func->name.c_str(), func->addr);
+			//		f["functionName"] = func->name.c_str();
+			//		f["functionAddress"] = to_hex(func->addr).c_str();
+			//		f["functionAnnotationNodes"] = json::array();
+			//		a_node["annotationData"]["offset"] = to_hex(offset).c_str();
 
-			const auto file_id = qcreate("codexplorer_types_done", 511);
-			if (file_id != -1)
-				qclose(file_id);
+			//		f["functionAnnotationNodes"].push_back(a_node);
+			//		annotation.push_back(f);
+			//	}
+			//	
+			//}
+			//int file_id = create_open_file(path_to_file.c_str());
+			//if (file_id != -1)
+			//{
+			//	auto t = annotation.dump(4);
+			//	qwrite(file_id, t.c_str(), t.size());
+			//	qclose(file_id);
+			//}
 		}
 		if (dump_vbtl)
 		{

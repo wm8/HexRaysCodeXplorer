@@ -101,23 +101,27 @@ __The Batch mode contains following features:__
 ```
 Example (dump types and ctrees for functions with name prefix "crypto_"):
 idaq.exe -OHexRaysCodeXplorer:dump_types:dump_ctrees:CRYPTOcrypto_path_to_idb
+"<IDA_PATH>\ida.exe" -B -OHexRaysCodeXplorer:dump_vbtl:<PATH_TO_RESULT_FILE> -c <BINARE_PATH>  
+
 ```
 
-__Compiling__:
 
+__Compiling__:
+Clone https://github.com/nlohmann/json
 ***Windows***: 
 * Open the solution in Visual Studio
+* Add Nlohmann::json include directory to C++ / General / Additional Include Directories
 * Open file `src/HexRaysCodeXplorer/PropertySheet.props` in notepad(++) and update values of `IDADIR` and `IDASDK` paths to point to IDA installation path and IDA7 SDK path accordingly. HexRays SDK should be in `$IDADIR\plugins\hexrays_sdk` (like by default)
-* Build `Release | x64` and `Release x64 | x64` configurations
+* Build `Release x32 | x64` and `Release x64 | x64` configurations
 
 ***Linux***:
 * cd src/HexRaysCodeXplorer/
-* IDA_DIR=<PATH_TO_IDA> IDA_SDK=<PATH_TO_IDA_SDK> EA64=0 make -f makefile.lnx
-* IDA_DIR=<PATH_TO_IDA> IDA_SDK=<PATH_TO_IDA_SDK> EA64=0 make -f makefile.lnx install
+* IDA_DIR=<PATH_TO_IDA> NLOHMANN_JSON=<PATH_TO_NLOHMANN_JSON> IDA_SDK=<PATH_TO_IDA_SDK> EA64=0 make -f makefile.lnx
+* IDA_DIR=<PATH_TO_IDA> NLOHMANN_JSON=<PATH_TO_NLOHMANN_JSON> IDA_SDK=<PATH_TO_IDA_SDK> EA64=0 make -f makefile.lnx install
   
 ***Mac***:
 * cd src/HexRaysCodeXplorer/
-* IDA_DIR=<PATH_TO_IDA> IDA_SDK=<PATH_TO_IDA_SDK> make -f makefile.mac
+* IDA_DIR=<PATH_TO_IDA> IDA_SDK=<PATH_TO_IDA_SDK> NLOHMANN_JSON=<PATH_TO_NLOHMANN_JSON> make -f makefile.mac
 * The Mac makefile might need some hand editing, pull requests welcome!
 * IDA 7.0 `.pmc` file extension should be `.dylib`
 * bash$ `export IDA_DIR="/Applications/IDA\ Pro\ 7.0/ida.app/Contents/MacOS" && export IDA_SDK="/Applications/IDA\ Pro\ 7.0/ida.app/Contents/MacOS/idasdk" && make -f makefile7.mac`
@@ -126,7 +130,7 @@ __Compiling__:
 ***With CMake***:
 * cd src/HexRaysCodeXplorer/
 * mkdir build && cd build
-* cmake .. -DIdaSdk_ROOT_DIR=<PATH_TO_IDA_SDK> -DHexRaysSdk_ROOT_DIR=<PATH_TO_HEXRAYS_SDK>
+* cmake .. -DIdaSdk_ROOT_DIR=<PATH_TO_IDA_SDK> -DHexRaysSdk_ROOT_DIR=<PATH_TO_HEXRAYS_SDK> -DNLOHMANN_JSON__ROOT_DIR=<PATH_TO_NLOHMANN_JSON>
 * cmake --build . --config Release
 
 ============================================================================

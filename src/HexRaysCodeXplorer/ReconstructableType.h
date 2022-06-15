@@ -25,10 +25,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #ifndef __H_RECONSTRUCTABLETYPE__
 #define __H_RECONSTRUCTABLETYPE__
-
 #pragma once
 #include "Common.h"
-
 extern int g_replace_id;
 
 enum MemberTypeKind {
@@ -130,6 +128,7 @@ public :
 class DLLEXPORT ReconstructableMember
 {
 public:
+	ea_t ea;
 	unsigned long offset;
 	std::string name;
 	ReconstructedMemberType *memberType;
@@ -141,7 +140,7 @@ public:
 
 class DLLEXPORT	ReconstructableType
 {
-
+public:
 	/* members as it is - free from any container */
 	std::map<unsigned int, ReconstructableMember *> ownMembers;
 	/* members which were grouped to some type */
@@ -154,6 +153,7 @@ protected:
 	ReconstructableType(const std::string &Name);
 
 public:
+	ea_t ea;
 	unsigned long id;
 	std::string name;
 	unsigned int typeId;
@@ -217,8 +217,8 @@ DLLEXPORT void re_types_form_init();
 DLLEXPORT void re_types_form_fini();
 
 extern DLLEXPORT std::map<std::string, ReconstructableType*> g_ReconstractedTypes;
+
 extern DLLEXPORT ea_t class_type_info_vtbl;
 extern DLLEXPORT ea_t si_class_type_info_vtbl;
 extern DLLEXPORT ea_t vmi_class_type_info_vtbl;
-
 #endif

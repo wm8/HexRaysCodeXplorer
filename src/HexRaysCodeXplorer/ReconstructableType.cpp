@@ -34,7 +34,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 SyncTypeInfoMethod syncTypeInfoMethod = SyncTypeInfo_Full;
 
 std::map<std::string, ReconstructableType*> g_ReconstractedTypes;
-
+//std::set<ReconstructableTypeVtable*> virt_tables;
 bool inside_hook = false;
 std::set<ReconstructableType*> g_ChangedTypes;
 bool in_type_changing = false;
